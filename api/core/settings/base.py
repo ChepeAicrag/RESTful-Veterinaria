@@ -13,8 +13,6 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 from decouple import config, Csv
 
-ENV = config('ENV', default='dev')
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -46,12 +44,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 ]
 
 INSTALLED_APPS += [
     # Third party apps:
     'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
+    'dj_rest_auth',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'dj_rest_auth.registration',
 
     # Local apps:
 ]
@@ -118,11 +123,10 @@ DATABASES = {
 
 # Heroku Postgres
 # <database_type>://<username>:<password>@<hostname>:<database_port>/<database_name>
-DATABASE_URL = config('DATABASE_URL', default='')
 
-if DATABASE_URL:
+if config('DATABASE_URL', default=''):
     from urllib.parse import urlparse
-    url_parsed = urlparse(DATABASE_URL)
+    url_parsed = urlparse(config('DATABASE_URL', default=''))
     DATABASES['default']['NAME'] = url_parsed.path[1:]
     DATABASES['default']['USER'] = url_parsed.username
     DATABASES['default']['PASSWORD'] = url_parsed.password
@@ -177,3 +181,26 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Django Rest Framework
+# https://www.django-rest-framework.org/
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ]
+}
+
+SITE_ID = 1
+
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_REQUIRED = True
+
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+
+ACCOUNT_ADAPTER = 'users.adapter.DefaultAccountAdapterCustom'

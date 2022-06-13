@@ -1,5 +1,7 @@
 # Plantilla básica de un proyecto de Django con Django Rest Framework
 
+**La rama auth-base incluye la implementación del registro, verificación de correo, reset password y login.**
+
 El objetivo de este repositorio es usarlo como una plantilla, esqueleto o también llamado `boilerplate` inicial para cualquier proyecto de API REST que use Django.
 
 La finalidad es que sirva de guía y permita al desarrollador enfocarse en escribir código y no en invertir demasiado tiempo en la inicialización y configuración del proyecto.
@@ -19,11 +21,10 @@ password: testuser
 - [psycopg2-binary](https://pypi.org/project/psycopg2-binary/)
 - [Python decouple](https://pypi.org/project/python-decouple/)
 - [Django-cors-headers](https://pypi.org/project/django-cors-headers/)
-- [Dj-database-url](https://pypi.org/project/dj-database-url/)
 - [WhiteNoise y Brotli](https://pypi.org/project/whitenoise/)
 - [Gunicorn](https://pypi.org/project/gunicorn/)
-- [django-heroku](https://pypi.org/project/django-heroku/)
-
+- [dj-rest-auth](https://pypi.org/project/dj-rest-auth/)
+- [django-allauth](https://pypi.org/project/django-allauth/)
 ### Para el ambiente de desarrollo usando pipfile se incluye también:
 - [flake8](https://pypi.org/project/flake8/) para el linting
 - [black](https://pypi.org/project/black/) para formatear el código
@@ -85,7 +86,7 @@ En todos los casos antes de levantarlo se deben cumplir los siguientes requisito
 > **Al cambiar la carpeta del proyecto a otra ruta se rompe la referencia entre el entorno virtual creado con pipenv y el proyecto en sí, causando como consecuencia que no se pueda usar más nunca.**
 > **Para evitar eso, se puede crear el entorno virtual dentro de la carpeta del proyecto (antes de hacer `$ pipenv install`) creando la siguiente variable de entorno**
 
-        $ export PIPENV_VENV_IN_PROJECT=1
+        $ export PIPENV_VENV_IN_PROJECT=1
 
 
 ### Comandos útiles de pipenv
@@ -179,7 +180,7 @@ En todos los casos antes de levantarlo se deben cumplir los siguientes requisito
 
         **Nota:** de ser necesario agregar la bandera `--pythonpath api` a gunicorn o hacer `cd api/` antes de ejecutarlo.
 
-### En un servidor de Heroku (3
+### En un servidor de Heroku (3)
 
 **Referencias:**
 

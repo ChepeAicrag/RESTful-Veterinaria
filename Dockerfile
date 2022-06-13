@@ -55,7 +55,9 @@ RUN  groupadd -g 1000 appuser \
 
 COPY --chown=appuser:appuser . /home/appuser/app
 
-# Required in Windows and MAC OS to run the entrypoint.sh script
+RUN mv /home/appuser/app/data /home/appuser/app/api
+
+# Required in Windows OS to run the entrypoint.sh script
 RUN sed -i 's/\r$//' /home/appuser/app/entrypoint.sh \
     && chmod 744 /home/appuser/app/entrypoint.sh
 
@@ -65,7 +67,7 @@ USER appuser
 
 WORKDIR /home/appuser/app/api
 
-RUN export DJANGO_SETTINGS_MODULE="core.settings.base" \
+RUN export DJANGO_SETTINGS_MODULE="core.settings.prod" \
     && python manage.py collectstatic --noinput
 
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
