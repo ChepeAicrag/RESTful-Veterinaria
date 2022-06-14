@@ -71,6 +71,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    status_delete = models.BooleanField(
+        default=False, verbose_name='Status Delete')
 
     USERNAME_FIELD = "email"
 
