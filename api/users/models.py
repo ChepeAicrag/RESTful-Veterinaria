@@ -63,7 +63,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=100)
     phone = models.CharField(max_length=10)
     role = models.ForeignKey(Role, choices=roles, on_delete=models.CASCADE)
-    address = models.ForeignKey(Adress, choices=roles, on_delete=models.CASCADE)
+    address = models.ForeignKey(
+        Address, choices=roles, on_delete=models.CASCADE)
 
     is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
