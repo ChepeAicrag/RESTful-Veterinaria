@@ -1,20 +1,16 @@
 version: '3.4'
 
 services:
-  equipoback-dev:
-    image: equipoback
+  app:
     build:
       context: .
-      dockerfile: ./Dockerfile.dev
-    volumes:
-      - ./api:/home/appuser/api
-    environment:
-      - PORT=8000
+      dockerfile: Dockerfile.dev
     env_file:
       - .env
+    volumes:
+      - ./:/app
     ports:
       - 8000:8000
-    stdin_open: true
     depends_on:
       - db
 
@@ -30,6 +26,15 @@ services:
       POSTGRES_HOST: ${POSTGRES_HOST}
     volumes:
       - pgdata:/var/lib/postgresql/data
+  
+  pg:
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    ports:
+      - ${PG_PORT}:${PG_PORT}
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PG_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PG_PASSWORD}
 
 volumes:
   pgdata:
