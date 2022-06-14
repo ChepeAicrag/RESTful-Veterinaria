@@ -73,15 +73,13 @@ class VerifyEmail(APIView):
                 user.is_active = True
                 user.save()
 
-            return Response({'email': 'Cuenta activada exitosamente'}, status=status.HTTP_200_OK)
+            return Response({'message': 'Cuenta activada exitosamente'}, status=status.HTTP_200_OK)
 
         except jwt.ExpiredSignatureError as identifier:
-            return Response({'email': 'La liga de activación expiró'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'La liga de activación expiró'}, status=status.HTTP_400_BAD_REQUEST)
 
         except jwt.exceptions.DecodeError as identifier:
-            return Response({'email': 'Token inválido'}, status=status.HTTP_400_BAD_REQUEST)
-
-# LISTA DE USUARIOS
+            return Response({'message': 'Token inválido'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResourceView(APIView):
