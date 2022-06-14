@@ -11,7 +11,7 @@ from users.models import User
 class UserSignupSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        exclude = ('status_delete', )
 
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -62,6 +62,4 @@ class UserLoginSerializer(serializers.ModelSerializer):
         fields = [
             'email',
             'password',
-            'is_active',
-            'is_verified',
         ]
