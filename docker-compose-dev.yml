@@ -15,9 +15,11 @@ services:
     ports:
       - 8000:8000
     stdin_open: true
+    depends_on:
+      - db
 
   db:
-    image: postgres:13
+    image: postgres:12.4
     restart: unless-stopped
     ports:
       - 5435:5432
