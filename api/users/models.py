@@ -65,7 +65,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     role = models.ForeignKey(Role, choices=roles, on_delete=models.CASCADE)
     address = models.ForeignKey(
         Address, choices=roles, on_delete=models.CASCADE)
-
     is_active = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
@@ -74,15 +73,14 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["name"]
 
     objects = UserManager()
-
-    def __str__(self):
-        return self.email
 
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users'
         db_table = 'Users'
         ordering = ('id', )
+
+    def __str__(self):
+        return self.email
