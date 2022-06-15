@@ -1,11 +1,14 @@
 from django.core import exceptions
+from django.urls import reverse
 from django.core.exceptions import ValidationError
 import django.contrib.auth.password_validation as validators
 
 from rest_framework import serializers
 from rest_framework import exceptions
+from rest_framework_simplejwt.tokens import RefreshToken
 
-from users.models import User
+from .models import Address, User
+from .utils import Util
 
 
 class UserSignupSerializer(serializers.ModelSerializer):
@@ -50,6 +53,15 @@ class UserSignupSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
+        token = RefreshToken.for_user(user).access_token
+        current_site = 'localhost:8000'
+        relativeLink = reverse('email-verify')
+        absurl = 'http://' + current_site + \
+            relativeLink + "?token=" + str(token)
+        email_body = 'Gracias por registrarte a , por favor verifica tu correo electrónico en la siguiente liga:\n' + absurl
+        data = {'email_body': email_body, 'to_email': user.email,
+                'email_subject': 'Confirma tu correo electrónico'}
+        Util.send_email(data)
         return user
 
 
@@ -63,3 +75,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
             'email',
             'password',
         ]
+
+
+class AddressSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        fields = '__all__'
