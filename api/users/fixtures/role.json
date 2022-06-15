@@ -1,0 +1,22 @@
+[
+    {
+        "model": "users.role",
+        "pk": 1,
+        "fields": {
+            "name": "Super Administrador",
+            "description": "Rol del administrador",
+            "isSuperAdmin": "True",
+            "status_delete": "False"
+        }
+    },
+    {
+        "model": "users.role",
+        "pk": 2,
+        "fields": {
+            "name": "Cliente",
+            "description": "Rol del cliente",
+            "isSuperAdmin": "False",
+            "status_delete": "False"
+        }
+    }
+]
