@@ -8,3 +8,17 @@ class PetSerializer(ModelSerializer):
     class Meta:
         model = Pet
         exclude = ('status_delete', )
+
+
+class BreedSerializer(ModelSerializer):
+
+    class Meta:
+        model = Breed
+        exclude = ('status_delete', )
+
+
+class TypePetSerializer(ModelSerializer):
+
+    class Meta:
+        model = TypePet
+        exclude = ('status_delete', )
