@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework import exceptions
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Address, User
+from .models import Address, Role, Town, User
 from .utils import Util
 
 
@@ -64,6 +64,9 @@ class UserSignupSerializer(serializers.ModelSerializer):
         Util.send_email(data)
         return user
 
+    def to_representation(self, instance):
+        return ListUserSerializer(instance).data
+
 
 class UserLoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=50)
@@ -77,8 +80,54 @@ class UserLoginSerializer(serializers.ModelSerializer):
         ]
 
 
+class TownSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Town
+        exclude = ('status_delete', )
+
+
 class AddressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Address
-        fields = '__all__'
+        exclude = ('status_delete', )
+
+
+class ValidateUser(serializers.Serializer):
+
+    class Meta:
+        model = User
+        exclude = ('status_delete', 'address')
+
+
+class ValidateAddress(serializers.Serializer):
+
+    class Meta:
+        model = Address
+        exclude = ('status_delete', 'town')
+
+
+class ValidatorJSONUser(serializers.Serializer):
+
+    town = TownSerializer()
+    user = ValidateUser()
+    address = ValidateAddress()
+
+
+class RoleSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Role
+        exclude = ('status_delete', )
+
+
+class ListUserSerializer(serializers.ModelSerializer):
+
+    role = RoleSerializer()
+    address = AddressSerializer()
+
+    class Meta:
+        model = User
+        exclude = ('status_delete', 'created_at', 'updated_at',
+                   'groups', 'user_permissions', 'is_superuser', 'password', 'is_verified', 'is_staff')

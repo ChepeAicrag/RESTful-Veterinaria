@@ -1,0 +1,12 @@
+[
+    {
+        "model": "users.town",
+        "pk": 1,
+        "fields": {
+            "cp": "68030",
+            "town": "Oaxaca de Juarez",
+            "state": "Oaxaca",
+            "status_delete": "False"
+        }
+    }
+]

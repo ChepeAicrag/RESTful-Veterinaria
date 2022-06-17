@@ -22,11 +22,20 @@ class Role(models.Model):
         ordering = ('id', )
 
 
+class Town(models.Model):
+    cp = models.CharField(max_length=255)
+    town = models.CharField(max_length=255)
+    state = models.CharField(max_length=255, default='Oaxaca')
+    status_delete = models.BooleanField(
+        default=False, verbose_name='Status Delete')
+
 class Address(models.Model):
 
     number = models.IntegerField()
-    state = models.CharField(max_length=255)
     street = models.CharField(max_length=255)
+    town = models.ForeignKey(Town, on_delete=models.CASCADE)
+    status_delete = models.BooleanField(
+        default=False, verbose_name='Status Delete')
 
     class Meta:
         verbose_name = 'Address'
@@ -59,6 +68,10 @@ class UserManager(BaseUserManager):
 # Modelo de la aplicacion.
 class User(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=150)
+    paternal_surname = models.CharField(
+        max_length=150, null=True)
+    mothers_maiden_name = models.CharField(
+        max_length=150, null=True)
     email = models.EmailField(max_length=50, unique=True)
     password = models.CharField(max_length=100)
     phone = models.CharField(max_length=10)

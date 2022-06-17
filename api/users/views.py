@@ -11,7 +11,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 
 from .models import Role, User
-from .serializers import AddressSerializer, UserSignupSerializer, UserLoginSerializer
+from .serializers import AddressSerializer, TownSerializer, UserSignupSerializer, UserLoginSerializer, ValidatorJSONUser
 
 
 class UserSignupView(APIView):
@@ -19,17 +19,24 @@ class UserSignupView(APIView):
 
     def post(self, request):
         data = request.data.copy()
-        serializer = AddressSerializer(
-            data=data.get('address', None))
+        serializer = ValidatorJSONUser(data=data)
         serializer.is_valid(raise_exception=True)
-        user = data.get('user', None)
-        if user is None:
-            return Response({'message': 'La información del usuario es requerida'}, status=status.HTTP_400_BAD_REQUEST)
+        user = data.get('user')
+        address = data.get('address')
+        town = data.get('town')
         role = Role.objects.filter(id=user['role'])
         if not role:
             return Response({'message': 'El rol dado no existe'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = TownSerializer(data=town)
+        serializer.is_valid(raise_exception=True)
         try:
             with transaction.atomic():
+                serializer.save()
+                address['town'] = serializer.data['id']
+                serializer = AddressSerializer(
+                    data=address)
+                if not serializer.is_valid():
+                    raise ValidationError(serializer.errors)
                 serializer.save()
                 user['address'] = serializer.data['id']
                 serializer = UserSignupSerializer(data=user)
@@ -43,7 +50,7 @@ class UserSignupView(APIView):
         except Exception as error:
             transaction.rollback()
             print(error)
-            return Response({'message': 'Error al registrar usuario'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Error al registrar usuario'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # VERIFICAR EMAIL
 
@@ -84,16 +91,6 @@ class ResourceView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# LOGIN
-"""
-    User login.  Input example:
-    {
-        "email":"email@email.com",
-        "password": "mysuperpassword"
-    }
-"""
-
-
 def get_tokens_for_user(user):
     refresh = RefreshToken.for_user(user)
 
@@ -115,21 +112,20 @@ class UserLoginView(APIView):
         if user:
             tokens = get_tokens_for_user(user)
             data = {
-                'msg': 'Exitosamente logueado',
+                'message': 'Exitosamente logueado',
                 'tokens': tokens
             }
             return Response(data, status=status.HTTP_200_OK)
 
         # Valida si el correo existe
-        user_email = User.objects.filter(email=email)
-        if not user_email.exists():
+        user = User.objects.filter(email=email).first()
+        if not user:
             return Response({
-                'msg': 'No existe una cuenta con este correo registrado'
+                'message': 'No existe una cuenta con este correo registrado'
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # Valida que el email este verificado
-        user_active = User.objects.get(email=email)
-        if user_active == False:
+        if not user.is_active:
             return Response({
-                'msg': 'La cuenta no ha está activada, por favor verifica tu email'
+                'message': 'La cuenta no ha está activada, por favor verifica tu email'
             }, status=status.HTTP_400_BAD_REQUEST)
