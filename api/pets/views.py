@@ -12,7 +12,12 @@ class ListCreatePet(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        pets = Pet.objects.all().filter(status_delete=False)
+        pets = None
+        user = request.user
+        if(user.is_superuser):
+            pets = Pet.objects.all().filter(status_delete=False)
+        else:
+            pets = Pet.objects.all().filter(status_delete=False, user=user)
         serializer = PetSerializer(pets, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -51,53 +56,11 @@ class ListUpdateDeletePet(APIView):
         return Response({'message': 'Mascota eliminada satisfactoriamente'}, status=status.HTTP_200_OK)
 
 
-class ListCreateBreed(APIView):
-
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        breeds = Breed.objects.all().filter(status_delete=False)
-        serializer = BreedSerializer(breeds, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request):
-        serializer = BreedSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class ListUpdateDeleteBreed(APIView):
-
-    permission_classes = [AllowAny]
-
-    def get(self, request, id):
-        breed = Breed.objects.all().filter(status_delete=False, pk=id)
-        if not breed:
-            return Response({'message': 'Tipo de mascota no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = BreedSerializer(breed)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, id):
-        breed = Breed.objects.filter(status_delete=False, id=id).first()
-        if not breed:
-            return Response({'message': 'Tipo de mascota no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
-        serializer = BreedSerializer(breed, request.data, partial=True)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def delete(self, request, id):
-        breed = Breed.objects.filter(status_delete=False, id=id).first()
-        if not breed:
-            return Response({'message': 'Raza no encontrada'}, status=status.HTTP_400_BAD_REQUEST)
-        count_pets = Pet.objects.all().filter(breed=breed).count()
-        if count_pets >= 1:
-            return Response({'message': 'No puede eliminar esta raza, hay mascotas que dependen de ella'}, status=status.HTTP_400_BAD_REQUEST)
-        breed.status_delete = True
-        breed.save()
-        return Response({'message': 'Raza eliminada satisfactoriamente'}, status=status.HTTP_200_OK)
-
+def validateTypePet(id):
+        type_pet = TypePet.objects.filter(status_delete=False, id=id).first()
+        if not type_pet:
+            return Response({'message': 'No existe el tipo de mascota con id dado'}, status=status.HTTP_400_BAD_REQUEST)
+        return type_pet
 
 class ListCreateTypePet(APIView):
 
@@ -120,28 +83,83 @@ class ListUpdateDeleteTypePet(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, id):
-        type_pet = TypePet.objects.all().filter(status_delete=False, id=id).first()
-        if not type_pet:
-            return Response({'message': 'Tipo de mascota no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+        type_pet = validateTypePet(id)
         serializer = TypePetSerializer(type_pet)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def put(self, request, id):
-        type_pet = TypePet.objects.all().filter(status_delete=False, id=id).first()
-        if not type_pet:
-            return Response({'message': 'Tipo de mascota no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+        type_pet = validateTypePet(id)
         serializer = TypePetSerializer(type_pet, request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def delete(self, request, id):
-        type_pet = TypePet.objects.all().filter(status_delete=False, id=id).first()
-        if not type_pet:
-            return Response({'message': 'Tipo de mascota no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+        type_pet = validateTypePet(id)
         count_pets = Pet.objects.all().filter(type_pet=type_pet).count()
         if count_pets >= 1:
-            return Response({'message': 'No puede eliminar esta raza, hay mascotas que dependen de ella'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'No puede eliminar esta tipo de mascota, hay mascotas que dependen de ella'}, status=status.HTTP_400_BAD_REQUEST)
+        count_breeds = Breed.objects.all().filter(type_pet=type_pet).count()
+        if count_breeds >= 1:
+            return Response({'message': 'No puede eliminar esta tipo de mascota, hay razas que dependen de ella'}, status=status.HTTP_400_BAD_REQUEST)
         type_pet.status_delete = True
         type_pet.save()
         return Response({'message': 'Tipo de mascota eliminada satisfactoriamente'}, status=status.HTTP_200_OK)
+
+
+class ListCreateBreed(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, id):
+        type_pet = TypePet.objects.filter(status_delete=False, id=id).first()
+        if not type_pet:
+            return Response({'message': 'No existe el tipo de mascota con id dado'}, status=status.HTTP_400_BAD_REQUEST)
+        breeds = Breed.objects.all().filter(status_delete=False, type_pet=type_pet)
+        serializer = BreedSerializer(breeds, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, id):
+        type_pet = TypePet.objects.filter(status_delete=False, id=id).first()
+        if not type_pet:
+            return Response({'message': 'No existe el tipo de mascota con id dado'}, status=status.HTTP_400_BAD_REQUEST)
+        request.data.setdefault('type_pet', type_pet)
+        serializer = BreedSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ListUpdateDeleteBreed(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, id, id_breed):
+        validateTypePet(id)
+        breed = Breed.objects.all().filter(status_delete=False, pk=id_breed)
+        if not breed:
+            return Response({'message': 'Tipo de mascota no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = BreedSerializer(breed)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, id, id_breed):
+        validateTypePet(id)
+        breed = Breed.objects.filter(status_delete=False, id=id).first()
+        if not breed:
+            return Response({'message': 'Tipo de mascota no encontrado'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = BreedSerializer(breed, request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, id, id_breed):
+        validateTypePet(id)
+        breed = Breed.objects.filter(status_delete=False, id=id).first()
+        if not breed:
+            return Response({'message': 'Raza no encontrada'}, status=status.HTTP_400_BAD_REQUEST)
+        count_pets = Pet.objects.all().filter(breed=breed).count()
+        if count_pets >= 1:
+            return Response({'message': 'No puede eliminar esta raza, hay mascotas que dependen de ella'}, status=status.HTTP_400_BAD_REQUEST)
+        breed.status_delete = True
+        breed.save()
+        return Response({'message': 'Raza eliminada satisfactoriamente'}, status=status.HTTP_200_OK)
