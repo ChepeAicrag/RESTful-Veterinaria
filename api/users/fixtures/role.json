@@ -18,5 +18,15 @@
             "isSuperAdmin": "False",
             "status_delete": "False"
         }
+    },
+    {
+        "model": "users.role",
+        "pk": 3,
+        "fields": {
+            "name": "Veterinario",
+            "description": "Rol del veterinario",
+            "isSuperAdmin": "False",
+            "status_delete": "False"
+        }
     }
 ]
