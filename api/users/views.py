@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import transaction
 from django.forms import ValidationError
+from django.shortcuts import redirect
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -72,9 +73,7 @@ class VerifyEmail(APIView):
             if not user.is_active:
                 user.is_active = True
                 user.save()
-
             return Response({'message': 'Cuenta activada exitosamente'}, status=status.HTTP_200_OK)
-
         except jwt.ExpiredSignatureError as identifier:
             return Response({'message': 'La liga de activación expiró'}, status=status.HTTP_400_BAD_REQUEST)
 
