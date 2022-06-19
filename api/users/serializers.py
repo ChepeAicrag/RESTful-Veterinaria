@@ -8,8 +8,6 @@ from rest_framework import exceptions
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Address, Role, Town, User
-from .utils import Util
-
 
 class UserSignupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,10 +56,7 @@ class UserSignupSerializer(serializers.ModelSerializer):
         relativeLink = reverse('email-verify')
         absurl = 'http://' + current_site + \
             relativeLink + "?token=" + str(token)
-        email_body = 'Gracias por registrarte a , por favor verifica tu correo electrónico en la siguiente liga:\n' + absurl
-        data = {'email_body': email_body, 'to_email': user.email,
-                'email_subject': 'Confirma tu correo electrónico'}
-        Util.send_email(data)
+        User.email_message('Activación de cuenta de usuario', absurl, user, validated_data.get('password'), 'register.html')
         return user
 
     def to_representation(self, instance):
@@ -88,6 +83,15 @@ class TownSerializer(serializers.ModelSerializer):
 
 
 class AddressSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Address
+        exclude = ('status_delete', )
+
+
+class ListAddressSerializer(serializers.ModelSerializer):
+
+    town = TownSerializer()
 
     class Meta:
         model = Address
@@ -125,9 +129,9 @@ class RoleSerializer(serializers.ModelSerializer):
 class ListUserSerializer(serializers.ModelSerializer):
 
     role = RoleSerializer()
-    address = AddressSerializer()
+    address = ListAddressSerializer()
 
     class Meta:
         model = User
         exclude = ('status_delete', 'created_at', 'updated_at',
-                   'groups', 'user_permissions', 'is_superuser', 'password', 'is_verified', 'is_staff')
+                   'groups', 'user_permissions', 'is_superuser', 'password', 'is_verified', 'is_staff', 'last_login', 'is_active')
