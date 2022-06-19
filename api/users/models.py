@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.utils.http import urlsafe_base64_encode
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
 
 from .choices import roles
-
-
+from .utils import send_email_validation
 class Role(models.Model):
 
     name = models.CharField(max_length=100, null=False, verbose_name='Nombre')
@@ -99,3 +101,14 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    @staticmethod
+    def email_message(subject, url, user, password, html):
+        message = render_to_string(html, {
+            'user': user.name,
+            'email': user.email,
+            'password': password,
+            'url': url, 
+        })
+        send_email_validation(subject, user.email, message)
+        return True
