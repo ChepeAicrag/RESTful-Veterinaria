@@ -55,8 +55,6 @@ RUN  groupadd -g 1000 appuser \
 
 COPY --chown=appuser:appuser . /home/appuser/app
 
-RUN mv /home/appuser/app/data /home/appuser/app/api
-
 # Required in Windows OS to run the entrypoint.sh script
 RUN sed -i 's/\r$//' /home/appuser/app/entrypoint.sh \
     && chmod 744 /home/appuser/app/entrypoint.sh
