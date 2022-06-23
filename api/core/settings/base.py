@@ -58,6 +58,7 @@ INSTALLED_APPS += [
     # Local apps:
     'users',
     'pets',
+    'appointments'
 ]
 
 MIDDLEWARE = [
@@ -227,3 +228,5 @@ SIMPLE_JWT = {
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
     'USER_ID_FIELD': 'id',
 }
+
+DOMAIN_HOST = config("DOMAIN_HOST", default="localhost:8000")
