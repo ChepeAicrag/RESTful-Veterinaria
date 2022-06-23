@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core import exceptions
 from django.urls import reverse
 from django.core.exceptions import ValidationError
@@ -8,6 +9,7 @@ from rest_framework import exceptions
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Address, Role, Town, User
+
 
 class UserSignupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -52,11 +54,12 @@ class UserSignupSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         token = RefreshToken.for_user(user).access_token
-        current_site = 'localhost:8000'
+        current_site = settings.DOMAIN_HOST
         relativeLink = reverse('email-verify')
-        absurl = 'http://' + current_site + \
+        absurl = current_site + \
             relativeLink + "?token=" + str(token)
-        User.email_message('Activación de cuenta de usuario', absurl, user, validated_data.get('password'), 'register.html')
+        User.email_message('Activación de cuenta de usuario', absurl,
+                           user, validated_data.get('password'), 'register.html')
         return user
 
     def to_representation(self, instance):
